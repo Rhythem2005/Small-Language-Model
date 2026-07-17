@@ -2,7 +2,7 @@
 
  **Work in Progress**
 
-This project aims to build and train a Small Language Model (SLM) from scratch using PyTorch. The goal is to understand the complete LLM pipeline—from data preprocessing and tokenization to training a transformer-based language model and generating text.
+This project aims to build and train a Small Language Model (SLM) from scratch. The goal is to understand the complete LLM pipeline—from data preprocessing and tokenization to training a transformer-based language model and generating text.
 
 ## Project Goals
 
@@ -12,15 +12,6 @@ This project aims to build and train a Small Language Model (SLM) from scratch u
 - Implement a GPT-style transformer architecture from scratch.
 - Train the model on TinyStories.
 - Generate coherent text using the trained model.
-
-## Tech Stack
-
-- Python
-- PyTorch
-- Hugging Face Datasets
-- tiktoken
-- NumPy
-- Jupyter Notebook
 
 ## Dataset
 
