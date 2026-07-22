@@ -1,6 +1,6 @@
-# Nova — A 30M Parameter Language Model
+# Nova — A 30M Parameter Language Model, Built from Scratch
 
-Nova is a GPT-style language model trained on the [TinyStories](https://huggingface.co/datasets/roneneldan/TinyStories) dataset. No pretrained weights, no Hugging Face `Trainer`, no shortcuts — just PyTorch, a tokenizer, and an Apple Silicon GPU.
+Nova is a GPT-style language model trained from scratch on the [TinyStories](https://huggingface.co/datasets/roneneldan/TinyStories) dataset. No pretrained weights, no Hugging Face `Trainer`, no shortcuts — just PyTorch, a tokenizer, and an Apple Silicon GPU.
 
 The goal was to understand the full pipeline: data → tokens → batches → transformer → loss → generation. Nova can produce short children's stories that are grammatically passable and occasionally charming, though far from perfect.
 
