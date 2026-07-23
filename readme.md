@@ -117,6 +117,9 @@ This is a learning project, not a production model. Here's what's honest:
 └── readme.md               # This file
 ```
 
+> **Note:** Files such as `donotpush.py`, `model.py`, and `train.py` are for personal use / local development and are git-ignored.
+
+
 ---
 
 ## How to Run
