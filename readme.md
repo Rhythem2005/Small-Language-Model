@@ -120,7 +120,7 @@ This is a learning project, not a production model. Here's what's honest:
 └── readme.md                 # This file
 ```
 
-> **Note:** Files such as `donotpush.py`, `model.py`, and `train.py` are for personal use / local development and are git-ignored.
+> **Note:** Files such as `model.py`, and `train.py` are for personal use / local development and are git-ignored.
 
 ---
 
@@ -142,16 +142,3 @@ jupyter notebook main.ipynb
 Run cells top-to-bottom. The tokenization step (`train.bin`/`validation.bin`) only runs once — subsequent runs skip it. Because the checkpoint on disk belongs to the old architecture, delete/ignore `best_model_params.pt` and retrain from scratch to get a checkpoint compatible with the current code.
 
 ---
-
-## What I Learned
-
-This project was built to understand the GPT pipeline end-to-end, and then to push it further with modern architecture choices:
-
-- How BPE tokenization works and why we append `<|endoftext|>` as a story boundary signal
-- Why pre-LN is more stable than post-LN for training
-- What weight tying actually saves and why it helps
-- How gradient accumulation simulates larger batch sizes on limited hardware
-- Why bfloat16 doesn't need a GradScaler but float16 does
-- How cosine LR decay with warmup prevents early training instability
-- Why RoPE, RMSNorm, GQA, and SwiGLU have become the modern default (LLaMA/Mistral/Gemma-style) and what each one actually buys you over the classic GPT-2 recipe
-- The difference between a model that's *memorized patterns* vs. one that *understands language* — and how far ~30M parameters and 1,250 optimizer steps gets you
