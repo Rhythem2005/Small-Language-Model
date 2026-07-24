@@ -1,8 +1,10 @@
-# Nova — A 30M Parameter Language Model, Built from Scratch
+# Nova — A ~30M Parameter Language Model, Built from Scratch
 
 Nova is a GPT-style language model trained from scratch on the [TinyStories](https://huggingface.co/datasets/roneneldan/TinyStories) dataset. No pretrained weights, no Hugging Face `Trainer`, no shortcuts — just PyTorch, a tokenizer, and an Apple Silicon GPU.
 
-The goal was to understand the full pipeline: data → tokens → batches → transformer → loss → generation. Nova can produce short children's stories that are grammatically passable and occasionally charming, though far from perfect.
+The goal was to understand the full pipeline: data → tokens → batches → transformer → loss → generation.
+
+> **⚠️ Status note (in progress):** The codebase has just been upgraded to a modernized architecture (RoPE, RMSNorm, GQA, SwiGLU, QK-Norm — details below). The results, sample generations, and checkpoint shown in this README are still from the **previous architecture** (LayerNorm + learned positional embeddings + standard MHA + GELU MLP). The new architecture has not been trained/verified yet — that's next. A PR with the retrained results will follow once verified. Until then, treat the "Results" section below as belonging to the old model, not the code currently in `main.ipynb`.
 
 ---
 
@@ -12,42 +14,39 @@ Everything lives in [`main.ipynb`](main.ipynb). The notebook walks through:
 
 1. **Dataset loading** — TinyStories from Hugging Face (~2.1M train stories, ~22K validation)
 2. **Tokenization** — GPT-2 BPE via `tiktoken`, serialized to binary files (`train.bin`, `validation.bin`) as uint16 memmap arrays
-3. **Model definition** — A decoder-only transformer written from scratch (LayerNorm, CausalSelfAttention, MLP, Block, GPT)
+3. **Model definition** — A decoder-only transformer written from scratch
 4. **Training** — AdamW with linear warmup + cosine LR decay, gradient accumulation, mixed precision (bfloat16), gradient clipping
 5. **Evaluation** — Loss estimation, perplexity, and multi-prompt text generation
 
 ---
 
-## Architecture
+## Architecture (current code)
 
 | Component | Value |
 |---|---|
-| Type | Decoder-only transformer (GPT-2 style) |
-| Layers | 6 |
-| Attention heads | 6 |
+| Type | Decoder-only transformer |
+| Layers | 8 (default config) |
+| Query heads | 6 |
+| KV heads | 2 (Grouped Query Attention, 3:1 sharing) |
 | Embedding dim | 384 (head dim = 64) |
-| Context window | 128 tokens |
-| Vocab size | 50,257 (GPT-2 BPE) |
-| Dropout | 0.1 |
-| Attention | PyTorch Flash Attention (`scaled_dot_product_attention`) |
-| Normalization | Pre-LN (LayerNorm before attention/MLP, not after) |
+| Context window | 256 tokens (default config) |
+| Vocab size | 50,304 (GPT-2 BPE, padded to multiple of 64) |
+| Dropout | 0.05 |
+| Position encoding | RoPE (rotary), no learned position table |
+| Normalization | RMSNorm (pre-norm) + QK-Norm on Q/K before attention |
+| Feed-forward | SwiGLU (~8/3× hidden dim) instead of GELU MLP |
+| Attention logits | Soft-capped (tanh, cap=50) |
+| Output logits | Soft-capped (tanh, cap=30) |
+| Generation | KV-cached — O(1) per new token instead of full recompute |
 | Weight tying | Yes — token embeddings shared with the output head |
 
-### Parameter Breakdown
+This is a from-scratch reimplementation of ideas from LLaMA/Mistral/Gemma 2, applied to a small (~30M) model. Exact parameter count depends on the config used for a given training run (e.g. `n_layer`, `block_size`, `bias` are all overridable).
 
-| Component | Parameters |
-|---|---|
-| Token embeddings (`wte`, shared with `lm_head`) | 19,298,688 |
-| Position embeddings (`wpe`) | 49,152 |
-| Transformer blocks (×6, each 1,774,464) | 10,646,784 |
-| Final LayerNorm | 768 |
-| **Total** | **29,995,392 (~30M)** |
-
-Weight tying saves ~19.3M parameters that would otherwise be duplicated in the output projection.
+> **Previous architecture** (what actually produced the results below): standard LayerNorm, learned positional embeddings (`wpe`), full multi-head attention, GELU MLP (4× hidden dim), PyTorch Flash Attention. No KV cache in `generate()`.
 
 ---
 
-## Training Setup
+## Training Setup (from the previous run — see status note)
 
 | Setting | Value |
 |---|---|
@@ -60,10 +59,11 @@ Weight tying saves ~19.3M parameters that would otherwise be duplicated in the o
 | Precision | bfloat16 (autocast on MPS) |
 | Gradient clipping | max norm 1.0 |
 | Device | Apple Silicon GPU (MPS) |
+| Config used | `n_layer=6, n_head=6, n_embd=384, block_size=128, vocab_size=50257, bias=True` |
 
 ---
 
-## Results
+## Results (from the previous architecture's checkpoint)
 
 **Final losses (from the best checkpoint):**
 
@@ -76,7 +76,7 @@ The train/val gap is tiny (~0.01), which means the model is **not overfitting** 
 
 ### Sample Generations
 
-These are actual outputs from the notebook, generated from the best checkpoint:
+These are actual outputs from the notebook, generated from the best checkpoint (previous architecture):
 
 > **Prompt:** "There was a little girl named"
 >
@@ -92,18 +92,21 @@ These are actual outputs from the notebook, generated from the best checkpoint:
 
 The model has clearly learned the TinyStories distribution — short, simple stories with characters like Lily, dialogue, and a narrative arc. But it frequently drifts into incoherent or contradictory sentences.
 
+**Note:** `best_model_params.pt` in this repo is a checkpoint from the previous architecture. It is **not compatible** with the current `GPT`/`GPTConfig` in `main.ipynb` (different module names — `q_proj`/`k_proj`/`gate_proj` vs. the old `c_attn`/`c_fc`, no `wpe`, etc.). Loading it into the new architecture will raise a state-dict key mismatch. A fresh checkpoint is needed once the new architecture is trained.
+
 ---
 
 ## Limitations
 
 This is a learning project, not a production model. Here's what's honest:
 
-- **Undertrained.** 5,000 micro-steps is ~1,250 actual optimizer updates. The loss was almost certainly still decreasing when training stopped. More steps would meaningfully improve quality.
-- **Tiny context.** 128 tokens is very short. Stories that exceed this window lose all prior context, which is why longer generations often lose coherence.
-- **Semantic drift.** The model generates plausible-sounding sentences that often don't follow logically from each other. It knows *how* TinyStories sound but doesn't deeply understand cause and effect.
-- **Repetition.** With default sampling (temperature=1.0, no top-k), the model sometimes repeats phrases or loops. The notebook uses temperature=0.8 and top_k=40 for the cleaner samples.
-- **No evaluation beyond perplexity.** There's no BLEU, ROUGE, or human eval. Perplexity of ~11.4 is reasonable for a 30M model on this dataset, but it doesn't tell you much about coherence.
-- **Loss curve not captured.** The plotting cell errors because `train_loss_list` isn't in memory (training was run in a prior session). The loss curve exists only in the training cell's output, which was not persisted in the notebook.
+- **New architecture unverified.** RoPE/GQA/RMSNorm/SwiGLU are in the code but haven't been trained or benchmarked yet on this dataset/hardware.
+- **Undertrained (previous run).** 5,000 micro-steps is ~1,250 actual optimizer updates. The loss was almost certainly still decreasing when training stopped.
+- **Tiny context.** 128–256 tokens is short. Stories that exceed this window lose all prior context.
+- **Semantic drift.** The model generates plausible-sounding sentences that often don't follow logically from each other.
+- **Repetition.** With default sampling, the model sometimes repeats phrases or loops.
+- **No evaluation beyond perplexity.** There's no BLEU, ROUGE, or human eval.
+- **Loss curve not captured (previous run).** The plotting cell errors because `train_loss_list` wasn't in memory in that session.
 
 ---
 
@@ -111,14 +114,13 @@ This is a learning project, not a production model. Here's what's honest:
 
 ```
 ├── main.ipynb              # Everything: data, model, training, eval, generation
-├── train.bin               # Tokenized training data (memmap, uint16)
-├── validation.bin          # Tokenized validation data (memmap, uint16)
-├── best_model_params.pt    # Best checkpoint (lowest val loss)
-└── readme.md               # This file
+├── train.bin                # Tokenized training data (memmap, uint16)
+├── validation.bin           # Tokenized validation data (memmap, uint16)
+├── best_model_params.pt     # Checkpoint from the PREVIOUS architecture (incompatible with current code)
+└── readme.md                 # This file
 ```
 
-> **Note:** Files such as `model.py`, and `train.py` are for personal use / local development and are git-ignored.
-
+> **Note:** Files such as `donotpush.py`, `model.py`, and `train.py` are for personal use / local development and are git-ignored.
 
 ---
 
@@ -137,13 +139,13 @@ pip install torch torchvision torchaudio datasets tiktoken matplotlib
 jupyter notebook main.ipynb
 ```
 
-Run cells top-to-bottom. The tokenization step (`train.bin`/`validation.bin`) only runs once — subsequent runs skip it. The training cell takes a while depending on your hardware.
+Run cells top-to-bottom. The tokenization step (`train.bin`/`validation.bin`) only runs once — subsequent runs skip it. Because the checkpoint on disk belongs to the old architecture, delete/ignore `best_model_params.pt` and retrain from scratch to get a checkpoint compatible with the current code.
 
 ---
 
 ## What I Learned
 
-This project was built to understand the GPT pipeline end-to-end:
+This project was built to understand the GPT pipeline end-to-end, and then to push it further with modern architecture choices:
 
 - How BPE tokenization works and why we append `<|endoftext|>` as a story boundary signal
 - Why pre-LN is more stable than post-LN for training
@@ -151,4 +153,5 @@ This project was built to understand the GPT pipeline end-to-end:
 - How gradient accumulation simulates larger batch sizes on limited hardware
 - Why bfloat16 doesn't need a GradScaler but float16 does
 - How cosine LR decay with warmup prevents early training instability
-- The difference between a model that's *memorized patterns* vs. one that *understands language* — and how far 30M parameters and 1,250 optimizer steps gets you (answer: further than you'd expect, but not far enough)
+- Why RoPE, RMSNorm, GQA, and SwiGLU have become the modern default (LLaMA/Mistral/Gemma-style) and what each one actually buys you over the classic GPT-2 recipe
+- The difference between a model that's *memorized patterns* vs. one that *understands language* — and how far ~30M parameters and 1,250 optimizer steps gets you
