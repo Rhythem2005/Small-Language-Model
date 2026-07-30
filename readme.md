@@ -177,8 +177,8 @@ This is a learning project, not a production model. Here's what's honest:
 
 ```bash
 # Clone and set up
-git clone https://github.com/Rhythem2005/SLM.git
-cd SLM
+git clone https://github.com/Rhythem2005/NOVA-SLM.git
+cd NOVA-SLM
 python -m venv venv && source venv/bin/activate
 pip install torch torchvision torchaudio datasets tiktoken matplotlib numpy
 
