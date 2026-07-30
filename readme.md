@@ -192,25 +192,6 @@ This project was built to understand the GPT pipeline end-to-end:
 - The difference between a model that's *memorized patterns* vs. one that *understands language* — and how far 30M parameters and 1,250 optimizer steps gets you (answer: further than you'd expect, but not far enough)
 - Modern architectural improvements (RMSNorm, RoPE, GQA, SwiGLU) and how they compare to the classic GPT-2 approach
 
----
-
-## 🗺️ Roadmap
-
-- [x] Build and train GPT-2 style model from scratch
-- [x] Upgrade architecture to LLaMA/Mistral style (RMSNorm, RoPE, GQA, SwiGLU)
-- [ ] Train the updated model on TinyStories
-- [ ] Compare performance between old and new architectures
-- [ ] Add evaluation metrics (BLEU, ROUGE, human eval)
-- [ ] Extend context window beyond 128 tokens
-- [ ] Experiment with larger model sizes (100M+)
-
----
-
-## 📜 License
-
-This project is for educational purposes. Feel free to fork, learn from, and build upon it.
-
----
 
 <p align="center">
   <i>Built with curiosity and PyTorch 🔥</i>
