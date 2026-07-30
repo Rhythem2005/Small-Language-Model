@@ -27,6 +27,20 @@ This repository contains **two model notebooks** at different stages of developm
 
 ---
 
+---
+ 
+## 💻 System Requirements
+ 
+Everything here was built and trained on a single MacBook Air (Apple M4, 16GB unified memory) — no cloud GPU, no cluster.
+ 
+| Requirement | Details |
+|---|---|
+| OS | macOS, Apple Silicon only (M1/M2/M3/M4) |
+| Python | 3.10+ (developed and tested on 3.14) |
+| GPU | Apple Silicon GPU via PyTorch's MPS backend — no discrete/dedicated GPU needed |
+| RAM | 16GB unified memory used in development. Training is memory-sensitive since CPU/GPU/Neural Engine all share the same pool — expect noticeable memory pressure during training even at this model size |
+| Disk space | ~1–2GB free (TinyStories dataset, tokenized `train.bin`/`validation.bin`, and model checkpoint) |
+
 ## 🏗️ Architecture
 
 ### Older Model (Stable)
