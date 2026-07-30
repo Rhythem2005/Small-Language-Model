@@ -1,9 +1,67 @@
-venv/
-*.bin
-.ipynb_checkpoints/
+*
+
+# Allow these specific files
+!.gitignore
+!oldermodel.ipynb
+!updated-model.ipynb
+!readme.md
+!LICENSE
+
+# === Python ===
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# === Virtual Environments ===
+venv/
+.venv/
+env/
+ENV/
+
+# === Jupyter ===
+.ipynb_checkpoints/
+
+# === Model & Data Artifacts ===
+*.bin
 *.pt
 *.pth
-model.py
-train.py
+*.onnx
+*.safetensors
+*.h5
+*.pkl
+*.pickle
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# === Logs & Results ===
+*.log
+eval_results.json
+
+# === Media / Assets ===
+project photos/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+
+# === Misc ===
+.env
+.env.local
+*.secret
