@@ -1,4 +1,4 @@
-# Nova — A 30M Parameter Language Model, Built from Scratch
+# Nova — A 30M Parameter Language Model
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Active%20Development-blue?style=for-the-badge" alt="Status"/>
