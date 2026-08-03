@@ -14,6 +14,10 @@ The goal was to understand the full pipeline: data → tokens → batches → tr
 
 ---
 
+## 📚 Research & References
+
+While building Nova, I studied the seminal **"Attention Is All You Need" (Vaswani et al., 2017)** paper to understand the foundations of the Transformer architecture. Although Nova is not a direct reproduction of the original model, many of the core concepts explored in the paper influenced my understanding and implementation decisions throughout this project.
+
 ## 📂 Model Versions
 
 This repository contains **two model notebooks** at different stages of development:
