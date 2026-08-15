@@ -5,7 +5,6 @@
   <img src="https://img.shields.io/badge/Parameters-30M-orange?style=for-the-badge" alt="Parameters"/>
   <img src="https://img.shields.io/badge/Framework-PyTorch-red?style=for-the-badge" alt="PyTorch"/>
   <img src="https://img.shields.io/badge/Device-Apple%20Silicon%20(MPS)-black?style=for-the-badge" alt="Device"/>
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License"/>
 </p>
 
 Nova is a GPT-style language model trained on the [TinyStories](https://huggingface.co/datasets/roneneldan/TinyStories) dataset. No pretrained weights, no Hugging Face `Trainer`, no shortcuts — just PyTorch, a tokenizer, and an Apple Silicon GPU.
