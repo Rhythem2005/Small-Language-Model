@@ -26,7 +26,7 @@ This repository contains **two model notebooks** at different stages of developm
 | **Older Model** | [`oldermodel.ipynb`](oldermodel.ipynb) | ✅ **Fully Trained & Working** | The original GPT-2 style model. Fully trained on TinyStories, produces coherent short stories. This is the stable, reference implementation. |
 | **Updated Model** | [`updated-model.ipynb`](updated-model.ipynb) | 🚧 **Untrained — Work in Progress** | Upgraded architecture with modern techniques (RMSNorm, RoPE, GQA, SwiGLU, KV Cache). **Not yet trained.** Code is complete but weights have not been generated. |
 
-> **⚠️ Note:** The **updated model is still untrained** and yet to be completed. To see a fully working version, please refer to the **older model**. The updated model with trained weights will be released soon.
+> **⚠️ Note:** The **updated model is still under training* and yet to be completed. To see a fully working version, please refer to the **older model**. The updated model with trained weights will be released soon.
 
 ---
 
